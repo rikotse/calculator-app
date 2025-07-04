@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <table border="1">
+      <tr>
+        <td colspan="4">
+          <input type="text" id="inputBox" value="0" readonly />
+        </td>
+      </tr>
+      <tr>
+        <td class="scientificButton" onclick="scientificBtnPressed('sin')">
+          sin
+        </td>
+        <td class="scientificButton" onclick="scientificBtnPressed('cos')">
+          cos
+        </td>
+        <td class="scientificButton" onclick="scientificBtnPressed('tan')">
+          tan
+        </td>
+        <td class="scientificButton" onclick="scientificBtnPressed('sqrt')">
+          √
+        </td>
+      </tr>
+      <tr>
+        <td class="scientificButton" onclick="scientificBtnPressed('log')">
+          log
+        </td>
+        <td class="scientificButton" onclick="scientificBtnPressed('exp')">
+          xʸ
+        </td>
+        <td class="scientificButton" onclick="scientificBtnPressed('pi')">π</td>
+        <td class="scientificButton" onclick="scientificBtnPressed('e')">e</td>
+      </tr>
+      <tr>
+        <td class="digitButton" onclick="digitBtnPressed(7)">7</td>
+        <td class="digitButton" onclick="digitBtnPressed(8)">8</td>
+        <td class="digitButton" onclick="digitBtnPressed(9)">9</td>
+        <td class="operatorButton" onclick="operatorBtnPressed('*')">x</td>
+      </tr>
+
+      <tr>
+        <td class="digitButton" onclick="digitBtnPressed(4)">4</td>
+        <td class="digitButton" onclick="digitBtnPressed(5)">5</td>
+        <td class="digitButton" onclick="digitBtnPressed(6)">6</td>
+        <td class="operatorButton" onclick="operatorBtnPressed('-')">-</td>
+      </tr>
+
+      <tr>
+        <td class="digitButton" onclick="digitBtnPressed(1)">1</td>
+        <td class="digitButton" onclick="digitBtnPressed(2)">2</td>
+        <td class="digitButton" onclick="digitBtnPressed(3)">3</td>
+        <td class="operatorButton" onclick="operatorBtnPressed('+')">+</td>
+      </tr>
+      <tr>
+        <td class="digitButton" colspan="2" onclick="digitBtnPressed(0)">0</td>
+
+        <td class="ACButton" onclick="btnACPressed()">AC</td>
+        <td class="operatorButton" onclick="operatorBtnPressed('/')">/</td>
+      </tr>
+      <tr>
+        <td
+          class="operatorButton"
+          colspan="4"
+          style="text-align: center"
+          onclick="equalsBtnPressed()"
+        >
+          =
+        </td>
+      </tr>
+    </table>
+
+    <script>
+      var newLine = true;
+      var value1;
+      var currentOperator;
+      var expMode = false;
+
+      // Scientific function handler
+      function scientificBtnPressed(func) {
+        var inputBox = document.getElementById("inputBox");
+        var value = parseFloat(inputBox.value);
+
+        // Handle invalid inputs
+        if (isNaN(value) && func !== "pi" && func !== "e") {
+          inputBox.value = "Error";
+          newLine = true;
+          return;
+        }
+
+        try {
+          switch (func) {
+            case "sin":
+              inputBox.value = Math.sin((value * Math.PI) / 180)
+                .toFixed(8)
+                .replace(/\.?0+$/, "");
+              break;
+            case "cos":
+              inputBox.value = Math.cos((value * Math.PI) / 180)
+                .toFixed(8)
+                .replace(/\.?0+$/, "");
+              break;
+            case "tan":
+              // Handle undefined tan values (90, 270, etc.)
+              if (Math.abs(Math.cos((value * Math.PI) / 180)) < 1e-10) {
+                inputBox.value = "Error";
+              } else {
+                inputBox.value = Math.tan((value * Math.PI) / 180)
+                  .toFixed(8)
+                  .replace(/\.?0+$/, "");
+              }
+              break;
+            case "sqrt":
+              if (value < 0) {
+                inputBox.value = "Error";
+              } else {
+                inputBox.value = Math.sqrt(value)
+                  .toFixed(8)
+                  .replace(/\.?0+$/, "");
+              }
+              break;
+            case "log":
+              if (value <= 0) {
+                inputBox.value = "Error";
+              } else {
+                inputBox.value = Math.log10(value)
+                  .toFixed(8)
+                  .replace(/\.?0+$/, "");
+              }
+              break;
+            case "exp":
+              value1 = value;
+              currentOperator = "exp";
+              newLine = true;
+              expMode = true;
+              break;
+            case "pi":
+              inputBox.value = Math.PI.toFixed(8).replace(/\.?0+$/, "");
+              break;
+            case "e":
+              inputBox.value = Math.E.toFixed(8).replace(/\.?0+$/, "");
+              break;
+          }
+        } catch (e) {
+          inputBox.value = "Error";
+        }
+
+        if (func !== "exp") newLine = true;
+      }
+
+      // Modify equalsBtnPressed to handle xʸ
+      function equalsBtnPressed() {
+        var inputBox = document.getElementById("inputBox");
+        var value2 = parseFloat(inputBox.value);
+
+        if (isNaN(value2)) {
+          inputBox.value = "Error";
+          newLine = true;
+          return;
+        }
+
+        var finalTotal;
+        if (!currentOperator) {
+          return;
+        }
+
+        try {
+          switch (currentOperator) {
+            case "+":
+              finalTotal = value1 + value2;
+              break;
+            case "-":
+              finalTotal = value1 - value2;
+              break;
+            case "*":
+              finalTotal = value1 * value2;
+              break;
+            case "/":
+              if (value2 === 0) {
+                finalTotal = "Error";
+              } else {
+                finalTotal = value1 / value2;
+              }
+              break;
+            case "exp":
+              if (value1 === 0 && value2 < 0) {
+                finalTotal = "Error";
+              } else {
+                finalTotal = Math.pow(value1, value2);
+              }
+              expMode = false;
+              break;
+            default:
+              finalTotal = "Error";
+          }
+
+          // Format the result to remove trailing .0 for whole numbers
+          if (typeof finalTotal === "number" && !isNaN(finalTotal)) {
+            inputBox.value =
+              finalTotal % 1 === 0
+                ? finalTotal.toString()
+                : finalTotal.toFixed(8).replace(/\.?0+$/, "");
+          } else {
+            inputBox.value = finalTotal;
+          }
+        } catch (e) {
+          inputBox.value = "Error";
+        }
+
+        value1 = 0;
+        newLine = true;
+      }
+
+      //Event handler for digit buttons
+      function digitBtnPressed(button) {
+        var inputBox = document.getElementById("inputBox");
+
+        if (inputBox.value === "Error") {
+          inputBox.value = "0";
+          newLine = true;
+        }
+
+        if (newLine) {
+          inputBox.value = button;
+          newLine = false;
+        } else {
+          var currentValue = inputBox.value;
+          inputBox.value =
+            currentValue === "0" ? button.toString() : currentValue + button;
+        }
+      }
+
+      //Event handler for AC button
+      function btnACPressed() {
+        document.getElementById("inputBox").value = "0";
+        newLine = true;
+        value1 = 0;
+        currentOperator = null;
+        expMode = false;
+      }
+
+      //Event handler for operator buttons
+      function operatorBtnPressed(operator) {
+        var inputBox = document.getElementById("inputBox");
+        var value = parseFloat(inputBox.value);
+
+        if (isNaN(value)) {
+          inputBox.value = "Error";
+          newLine = true;
+          return;
+        }
+
+        currentOperator = operator;
+        value1 = value;
+        newLine = true;
+      }
+    </script>
+  </body>
+</html>
